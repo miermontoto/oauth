@@ -1,0 +1,21 @@
+services:
+  oauth:
+    build: .
+    container_name: mier-id
+    # el nginx-proxy del host llega por nombre de contenedor (mier-id:3000) y pone el tls
+    volumes:
+      - oauth-data:/app/data
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - DATABASE_PATH=/app/data/oauth.db
+    restart: unless-stopped
+    networks:
+      - nginx-proxy-network
+
+networks:
+  nginx-proxy-network:
+    external: true
+
+volumes:
+  oauth-data:
