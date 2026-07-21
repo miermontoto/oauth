@@ -50,6 +50,13 @@ form.inline{display:inline}
 .providers{display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem}
 .providers .btn{margin-top:0;background:transparent;color:var(--fg);border-color:var(--edge)}
 .providers .btn:hover{background:var(--field)}
+.social{margin-top:1.25rem}
+.social-sep{display:flex;align-items:center;gap:.75rem;color:var(--muted);font-size:.74rem;text-transform:lowercase;letter-spacing:.03em}
+.social-sep::before,.social-sep::after{content:'';flex:1;height:1px;background:var(--border)}
+.social-icons{display:flex;justify-content:center;flex-wrap:wrap;gap:.6rem;margin-top:.9rem}
+.social-btn{display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;border:1px solid var(--edge);color:var(--fg);text-decoration:none;margin-top:0}
+.social-btn:hover{background:var(--fg);color:var(--bg)}
+.social-letter{font-weight:400;font-size:1.05rem;line-height:1}
 hr.sep{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
 section.panel{background:var(--card);border:1px solid var(--edge);border-radius:0;padding:1.25rem 1.5rem;margin-bottom:1rem}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem}
