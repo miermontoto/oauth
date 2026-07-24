@@ -1,7 +1,7 @@
 // layout base: documento html completo con la hoja de estilos inline y el wordmark de marca.
 // estética brutalista monocroma (negro/blanco/gris) con acentos de color solo en estados,
 // al estilo de url.mier.info: tipografía monoespaciada, bordes duros, esquinas rectas.
-import type { FC, PropsWithChildren } from 'hono/jsx';
+import type { Child, FC, PropsWithChildren } from 'hono/jsx';
 import { html } from 'hono/html';
 import { SERVICE_NAME } from '../constants.js';
 import { BrandMark } from './brand.js';
@@ -13,13 +13,14 @@ const styles = `
 @font-face{font-family:'Berkeley Mono';font-display:swap;src:local('Berkeley Mono')}
 @font-face{font-family:'Courier Prime';font-display:swap;src:local('Courier Prime')}
 :root{color-scheme:dark;--bg:#000;--fg:#fff;--muted:#999;--card:#0a0a0a;--field:#1a1a1a;--border:#333;--edge:#666;--accent:#fff;--accent-fg:#000;--danger:#ff6b6b;--danger-bg:#660000;--danger-edge:#992222;--ok:#5bd75b;--ok-bg:#006600;--ok-edge:#229922;--warn-bg:#666600;--code-bg:#141414}
-body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;background:var(--bg);color:var(--fg);font:300 15px/1.5 'Berkeley Mono','Courier Prime',ui-monospace,'Cascadia Mono',monospace;padding:2rem 1rem 3rem}
-.brand{padding-bottom:1.75rem;text-align:center}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;background:var(--bg);color:var(--fg);font:300 15px/1.5 'Berkeley Mono','Courier Prime',ui-monospace,'Cascadia Mono',monospace;padding:2.5rem 1rem 3rem}
+body.auth{justify-content:safe center;gap:.5rem}
+.brand{padding-bottom:1.4rem;text-align:center}
 .brand a{display:inline-flex;flex-direction:column;align-items:center;gap:.45rem;font-weight:400;font-size:1.05rem;letter-spacing:-.02em;color:var(--fg);text-decoration:none;text-transform:lowercase}
 .brand svg{display:block}
-main.card{width:min(24rem,100%);background:var(--card);border:1px solid var(--edge);padding:1.75rem;margin-top:4vh}
+main.card{width:min(23rem,100%);background:var(--card);border:1px solid var(--edge);padding:1.9rem}
 main.wide{width:min(64rem,100%)}
-h1{font-size:1.25rem;margin:0 0 1rem;font-weight:400;letter-spacing:-.5px}
+h1{font-size:1.2rem;margin:0 0 1.1rem;font-weight:400;letter-spacing:-.3px}
 h2{font-size:1rem;margin:0 0 .75rem;font-weight:400}
 h3{font-size:.78rem;margin:1.25rem 0 .5rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 p{margin:.5rem 0}
@@ -28,9 +29,9 @@ a:hover{color:var(--muted)}
 .muted{color:var(--muted)}
 .small{font-size:.84rem}
 label{display:block;font-size:.74rem;font-weight:400;color:var(--muted);margin:.9rem 0 .3rem;text-transform:lowercase;letter-spacing:.02em}
-input[type=text],input[type=email],input[type=password],textarea{width:100%;padding:.55rem .65rem;border:1px solid var(--edge);border-radius:0;background:var(--field);color:var(--fg);font:inherit}
+input[type=text],input[type=email],input[type=password],textarea{width:100%;padding:.6rem .7rem;border:1px solid var(--edge);border-radius:0;background:var(--field);color:var(--fg);font:inherit}
 input::placeholder{color:#666}
-input:focus-visible,textarea:focus-visible{outline:2px solid var(--fg);outline-offset:0;background:#222}
+input:focus-visible,textarea:focus-visible{outline:none;border-color:var(--fg);background:#181820}
 input.compact{width:auto;max-width:9.5rem;padding:.35rem .5rem}
 button,.btn{display:inline-block;margin-top:1rem;padding:.55rem .95rem;border:1px solid var(--fg);border-radius:0;background:var(--accent);color:var(--accent-fg);font:inherit;font-weight:400;cursor:pointer;text-decoration:none;text-align:center;text-transform:lowercase}
 button:hover,.btn:hover{background:#ccc;color:#000}
@@ -61,11 +62,17 @@ form.inline{display:inline}
 .social-letter{font-weight:400;font-size:1.05rem;line-height:1}
 hr.sep{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
 section.panel{background:var(--card);border:1px solid var(--edge);border-radius:0;padding:1.25rem 1.5rem;margin-bottom:1rem}
-.hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:.75rem;margin-top:.5rem}
-.hub-card{display:flex;flex-direction:column;gap:.3rem;padding:1rem 1.1rem;border:1px solid var(--edge);text-decoration:none;color:var(--fg)}
+.hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:.7rem;margin-top:.25rem}
+.hub-card{display:flex;align-items:center;gap:.85rem;padding:.9rem 1rem;border:1px solid var(--edge);text-decoration:none;color:var(--fg)}
 .hub-card:hover{background:var(--field);border-color:var(--fg);color:var(--fg)}
-.hub-name{font-size:1rem}
-.hub-host{color:var(--muted);font-size:.8rem}
+.hub-badge{flex:0 0 auto;width:2.4rem;height:2.4rem;display:flex;align-items:center;justify-content:center;border:1px solid var(--edge);font-size:1.15rem;text-transform:uppercase}
+.hub-card:hover .hub-badge{border-color:var(--fg)}
+.hub-body{display:flex;flex-direction:column;gap:.1rem;min-width:0}
+.hub-name{font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hub-host{color:var(--muted);font-size:.78rem}
+.brand-bar{width:min(64rem,100%);padding-bottom:1.4rem;margin-bottom:1.4rem;text-align:left;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.brand-bar a{flex-direction:row;gap:.5rem;font-size:1rem}
+.brand-actions{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;text-transform:none}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem}
 .topbar h1{margin:0}
 .row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
@@ -83,7 +90,12 @@ ul.codes{list-style:none;margin:.75rem 0;padding:.85rem 1rem;columns:2;font-fami
 ul.codes li{padding:.15rem 0}
 `;
 
-export const Layout: FC<PropsWithChildren<{ title: string; wide?: boolean }>> = ({ title, wide, children }) => (
+export const Layout: FC<PropsWithChildren<{ title: string; wide?: boolean; actions?: Child }>> = ({
+  title,
+  wide,
+  actions,
+  children,
+}) => (
   <>
     {html`<!DOCTYPE html>`}
     <html lang="es">
@@ -94,12 +106,13 @@ export const Layout: FC<PropsWithChildren<{ title: string; wide?: boolean }>> = 
         <title>{`${title} · ${SERVICE_NAME}`}</title>
         <style dangerouslySetInnerHTML={{ __html: styles }} />
       </head>
-      <body>
-        <header class="brand">
+      <body class={wide ? 'wide-page' : 'auth'}>
+        <header class={wide ? 'brand brand-bar' : 'brand'}>
           <a href="/">
-            <BrandMark size={34} />
+            <BrandMark size={wide ? 26 : 34} />
             <span>{SERVICE_NAME}</span>
           </a>
+          {wide && actions && <div class="brand-actions">{actions}</div>}
         </header>
         <main class={wide ? 'wide' : 'card'}>{children}</main>
       </body>

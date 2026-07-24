@@ -104,10 +104,11 @@ export const HubPage: PageFC<{
   user: PublicUser;
   services: { name: string; url: string; host: string }[];
 }> = ({ user, services }) => (
-  <Layout title="Inicio" wide>
-    <div class="topbar">
-      <h1>Tus servicios</h1>
-      <div class="row">
+  <Layout
+    title="Inicio"
+    wide
+    actions={
+      <>
         <span class="muted small">{user.email}</span>
         <a class="btn secondary sm" href="/account">
           Mi cuenta
@@ -115,16 +116,21 @@ export const HubPage: PageFC<{
         <form class="inline" method="post" action="/logout">
           <button class="secondary sm">Salir</button>
         </form>
-      </div>
-    </div>
+      </>
+    }
+  >
+    <h1>Tus servicios</h1>
     {services.length === 0 ? (
       <p class="muted">Aún no hay servicios registrados. Añade clientes OAuth desde el panel de administración.</p>
     ) : (
       <div class="hub">
         {services.map((s) => (
           <a class="hub-card" href={s.url}>
-            <span class="hub-name">{s.name}</span>
-            <span class="hub-host">{s.host}</span>
+            <span class="hub-badge">{s.name.charAt(0)}</span>
+            <span class="hub-body">
+              <span class="hub-name">{s.name}</span>
+              <span class="hub-host">{s.host}</span>
+            </span>
           </a>
         ))}
       </div>
