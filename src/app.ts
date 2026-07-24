@@ -1,6 +1,7 @@
 // composición de la app: middleware de sesión + routers
 import { createPlatformApp } from '@platform/core-api';
 import { sessionMiddleware } from './services/session.js';
+import { FAVICON_SVG } from './ui/brand.js';
 import { oidcRoutes, wellKnownRoutes } from './routes/oidc.js';
 import { loginRoutes } from './routes/login.js';
 import { socialRoutes } from './routes/social.js';
@@ -15,6 +16,12 @@ export function createApp(): Hono<AppEnv> {
   const app = createPlatformApp<AppEnv>();
 
   app.get('/health', (c) => c.json({ ok: true, version: VERSION }));
+  app.get('/favicon.svg', (c) =>
+    c.body(FAVICON_SVG, 200, {
+      'Content-Type': 'image/svg+xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=86400',
+    }),
+  );
 
   app.use('*', sessionMiddleware);
 

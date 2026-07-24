@@ -4,6 +4,7 @@
 import type { FC, PropsWithChildren } from 'hono/jsx';
 import { html } from 'hono/html';
 import { SERVICE_NAME } from '../constants.js';
+import { BrandMark } from './brand.js';
 
 // hoja única: mono (Berkeley Mono del propietario vía local(), fallback monospace),
 // paleta monocroma con acentos semánticos (rojo/verde/amarillo terminal), sin radios
@@ -14,8 +15,8 @@ const styles = `
 :root{color-scheme:dark;--bg:#000;--fg:#fff;--muted:#999;--card:#0a0a0a;--field:#1a1a1a;--border:#333;--edge:#666;--accent:#fff;--accent-fg:#000;--danger:#ff6b6b;--danger-bg:#660000;--danger-edge:#992222;--ok:#5bd75b;--ok-bg:#006600;--ok-edge:#229922;--warn-bg:#666600;--code-bg:#141414}
 body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;background:var(--bg);color:var(--fg);font:300 15px/1.5 'Berkeley Mono','Courier Prime',ui-monospace,'Cascadia Mono',monospace;padding:2rem 1rem 3rem}
 .brand{padding-bottom:1.75rem;text-align:center}
-.brand a{font-weight:400;font-size:1.05rem;letter-spacing:-.02em;color:var(--fg);text-decoration:none;text-transform:lowercase}
-.brand a::after{content:'';display:block;width:1.6rem;height:2px;background:var(--fg);margin:.35rem auto 0}
+.brand a{display:inline-flex;flex-direction:column;align-items:center;gap:.45rem;font-weight:400;font-size:1.05rem;letter-spacing:-.02em;color:var(--fg);text-decoration:none;text-transform:lowercase}
+.brand svg{display:block}
 main.card{width:min(24rem,100%);background:var(--card);border:1px solid var(--edge);padding:1.75rem;margin-top:4vh}
 main.wide{width:min(64rem,100%)}
 h1{font-size:1.25rem;margin:0 0 1rem;font-weight:400;letter-spacing:-.5px}
@@ -84,12 +85,16 @@ export const Layout: FC<PropsWithChildren<{ title: string; wide?: boolean }>> = 
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <title>{`${title} · ${SERVICE_NAME}`}</title>
         <style dangerouslySetInnerHTML={{ __html: styles }} />
       </head>
       <body>
         <header class="brand">
-          <a href="/">{SERVICE_NAME}</a>
+          <a href="/">
+            <BrandMark size={34} />
+            <span>{SERVICE_NAME}</span>
+          </a>
         </header>
         <main class={wide ? 'wide' : 'card'}>{children}</main>
       </body>
