@@ -218,6 +218,8 @@ export const AccountPage: PageFC<{
 }> = ({ user, sessions, passkeys, identities, providers, totpEnabled, flash, error }) => {
   const linked = new Set(identities.map((i) => i.provider));
   const unlinked = providers.filter((p) => !linked.has(p.id));
+  // nombre legible del proveedor (los identities solo guardan el id)
+  const providerName = (id: string): string => providers.find((p) => p.id === id)?.name ?? id;
   return (
     <Layout title="Mi cuenta" wide>
       <div class="topbar">
@@ -343,7 +345,8 @@ export const AccountPage: PageFC<{
         {identities.length === 0 && <p class="muted small">Ninguna cuenta vinculada.</p>}
         {identities.map((i) => (
           <p class="row small">
-            <strong>{i.provider}</strong>
+            <ProviderIcon id={i.provider} name={i.provider} />
+            <strong>{providerName(i.provider)}</strong>
             <span class="muted">{i.email ?? 'sin email'}</span>
             <form class="inline" method="post" action="/account/identities/unlink">
               <input type="hidden" name="provider" value={i.provider} />
@@ -352,13 +355,21 @@ export const AccountPage: PageFC<{
           </p>
         ))}
         {unlinked.length > 0 && (
-          <p class="row">
-            {unlinked.map((p) => (
-              <a class="btn secondary sm" href={`/login/${p.id}?link=1`}>
-                Vincular {p.name}
-              </a>
-            ))}
-          </p>
+          <>
+            <p class="muted small">Vincular otra cuenta</p>
+            <div class="social-icons start">
+              {unlinked.map((p) => (
+                <a
+                  class="social-btn"
+                  href={`/login/${p.id}?link=1`}
+                  aria-label={`Vincular ${p.name}`}
+                  title={`Vincular ${p.name}`}
+                >
+                  <ProviderIcon id={p.id} name={p.name} />
+                </a>
+              ))}
+            </div>
+          </>
         )}
       </section>
 
