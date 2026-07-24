@@ -98,6 +98,40 @@ export const LoginPage: PageFC<{
   </Layout>
 );
 
+// hub de servicios: la landing de id.mier.info cuando hay sesión. lista las apps
+// registradas como clientes oauth; al ser sso, entrar en cualquiera es silencioso.
+export const HubPage: PageFC<{
+  user: PublicUser;
+  services: { name: string; url: string; host: string }[];
+}> = ({ user, services }) => (
+  <Layout title="Inicio" wide>
+    <div class="topbar">
+      <h1>Tus servicios</h1>
+      <div class="row">
+        <span class="muted small">{user.email}</span>
+        <a class="btn secondary sm" href="/account">
+          Mi cuenta
+        </a>
+        <form class="inline" method="post" action="/logout">
+          <button class="secondary sm">Salir</button>
+        </form>
+      </div>
+    </div>
+    {services.length === 0 ? (
+      <p class="muted">Aún no hay servicios registrados. Añade clientes OAuth desde el panel de administración.</p>
+    ) : (
+      <div class="hub">
+        {services.map((s) => (
+          <a class="hub-card" href={s.url}>
+            <span class="hub-name">{s.name}</span>
+            <span class="hub-host">{s.host}</span>
+          </a>
+        ))}
+      </div>
+    )}
+  </Layout>
+);
+
 export const SignupPage: PageFC<{
   returnTo: string | null;
   error?: string;

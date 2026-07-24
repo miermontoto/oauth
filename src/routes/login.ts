@@ -20,7 +20,8 @@ import { listProviders } from '../services/upstream.js';
 import { hasTotpEnabled, verifyRecoveryCode, verifyTotp } from '../services/totp.js';
 import { revokeUserTokens } from '../services/tokens.js';
 import { clientIp } from '../services/client-ip.js';
-import { ForgotPage, LoginPage, MessagePage, MfaPage, ResetPage, SignupPage } from '../ui/pages.js';
+import { listClients } from '../services/clients.js';
+import { ForgotPage, HubPage, LoginPage, MessagePage, MfaPage, ResetPage, SignupPage } from '../ui/pages.js';
 import type { AppEnv } from '../types.js';
 
 const MFA_CHALLENGE_ID_BYTES = 32;
@@ -53,7 +54,24 @@ const resetSchema = z.object({
 export function loginRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
 
-  r.get('/', (c) => c.redirect(c.get('session') ? '/account' : '/login'));
+  // landing = hub de servicios cuando hay sesión; si no, al login
+  r.get('/', (c) => {
+    const session = c.get('session');
+    if (!session) return c.redirect('/login');
+    // deriva el destino de cada servicio del origen de su redirect_uri (auto, sin config extra)
+    const services = listClients()
+      .map((cl) => {
+        try {
+          const url = new URL(cl.redirectUris[0] ?? '').origin;
+          return { name: cl.name, url, host: new URL(url).host };
+        } catch {
+          return null;
+        }
+      })
+      .filter((s): s is { name: string; url: string; host: string } => s !== null)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return c.html(HubPage({ user: session.user, services }));
+  });
 
   r.get('/login', (c) => {
     const returnTo = c.req.query('return_to') ?? null;

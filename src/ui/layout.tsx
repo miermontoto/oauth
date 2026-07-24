@@ -61,6 +61,11 @@ form.inline{display:inline}
 .social-letter{font-weight:400;font-size:1.05rem;line-height:1}
 hr.sep{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
 section.panel{background:var(--card);border:1px solid var(--edge);border-radius:0;padding:1.25rem 1.5rem;margin-bottom:1rem}
+.hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:.75rem;margin-top:.5rem}
+.hub-card{display:flex;flex-direction:column;gap:.3rem;padding:1rem 1.1rem;border:1px solid var(--edge);text-decoration:none;color:var(--fg)}
+.hub-card:hover{background:var(--field);border-color:var(--fg);color:var(--fg)}
+.hub-name{font-size:1rem}
+.hub-host{color:var(--muted);font-size:.8rem}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem}
 .topbar h1{margin:0}
 .row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}

@@ -23,6 +23,7 @@ Hono 4 + drizzle-orm + better-sqlite3 (WAL) on Node 22, ESM, TypeScript strict. 
 
 ## Key flows
 
+- **Service hub**: `GET /` (in `login.ts`) renders `HubPage` when logged in — a card grid of the registered OAuth clients, each linking to the origin of its first redirect_uri (auto, no extra config). Logged-out → `/login`.
 - **Authorization code + PKCE (S256)**: codes are single-use, 60s TTL. All long-lived tokens and one-shot codes are stored sha-256 hashed.
 - **Access token = JWT ES256** verifiable via JWKS — the Go app verifies stateless. Key generated at first boot, persisted in `signing_keys` (rotation via `retired_at`: retired keys only verify).
 - **Refresh tokens**: rotation with chain revocation — `replaced_by_hash` links the chain; replay of a rotated token revokes the whole chain.
