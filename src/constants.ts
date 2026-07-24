@@ -1,5 +1,5 @@
 // constantes del servicio: identidad, cookies y ttls
-export const SERVICE_NAME = 'mier id';
+export const SERVICE_NAME = 'mier.info';
 export const VERSION = '0.1.0';
 
 export const SESSION_COOKIE_NAME = 'id_session';
