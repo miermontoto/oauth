@@ -15,7 +15,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.0",
+    "@hono/node-server": "^2.0.10",
     "@node-rs/argon2": "^2.0.0",
     "@platform/auth": "workspace:*",
     "@platform/core-api": "workspace:*",
