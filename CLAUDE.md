@@ -60,6 +60,13 @@ See `.env.example`. `ISSUER_URL` is mandatory in prod (the `iss` of every token)
 - Local MFA does not apply to federated (social) login.
 - Open registration; first user = admin.
 
+## Git & deploy workflow
+
+- Auto-commit is authorized in this repo (overrides the global "don't commit unless prompted" rule). Commit committable changes **before the turn ends**, grouped logically, with conventional-commit messages matching history (`type(scope): summary`).
+- Commits here are unsigned: pass `--no-gpg-sign` (the global config signs with 1Password's `op-ssh-sign`, which isn't installed on this host).
+- Never push automatically: push to `origin/main` only when asked.
+- Deploy is automatic: a `Stop` hook in `.claude/settings.local.json` (gitignored) runs `docker compose up --build -d` after the turn, but **only when deploy-relevant paths changed** since the last deploy (`src/`, `Dockerfile`, `docker-compose.yml`, `package.json`, `pnpm-lock.yaml`, `tsup.config.ts`, `tsconfig.json`, `platform`; marker: `.git/oauth-last-deploy`). Committing is enough, don't deploy manually. The hook deploys the working tree, so commit first. Each deploy recreates `mier-id`: a few seconds of 502.
+
 ## Deployment
 
 Docker: host port 3006 → container 3000, named volume `oauth-data` at `/app/data`; tls terminated by the host's nginx-proxy → `https://id.mier.info`. Image must stay glibc (`node:22-slim`): `@node-rs/argon2` and `better-sqlite3` ship linux-x64-gnu binaries — no alpine.
