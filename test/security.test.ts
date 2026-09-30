@@ -1,5 +1,5 @@
 // regresiones de seguridad: cubren los fallos encontrados en la auditoría para que
-// no reaparezcan (linking upstream, rotación atómica, binding de revoke, admin).
+// no reaparezcan (linking upstream, rotación atómica, binding de revoke, admin, xss en login).
 import { DB_PATH } from './helpers.js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { rmSync } from 'node:fs';
@@ -12,6 +12,8 @@ import { getDb } from '../src/db/index.js';
 import { refreshTokens } from '../src/db/schema.js';
 import { eq } from 'drizzle-orm';
 import type { UpstreamProfile } from '../src/types.js';
+import { createApp } from '../src/app.js';
+import { AUTHORIZE_PATH } from '../src/constants.js';
 
 beforeAll(async () => {
   await ensureSigningKey();
@@ -123,5 +125,29 @@ describe('revoke con binding de cliente (rfc 7009)', () => {
     expect(revokeToken(token, a.id)).toBe(true);
     // segunda vez ya no hay nada vivo que revocar
     expect(revokeToken(token, a.id)).toBe(false);
+  });
+});
+
+describe('página de login', () => {
+  it('un return_to con </script> no inyecta código en el script de passkeys', async () => {
+    const payload = '</script><script>alert(1)</script>';
+    const html = await (await createApp().request(`/login?return_to=${encodeURIComponent(payload)}`)).text();
+    expect(html).not.toContain(payload);
+    // el valor solo aparece escapado dentro del data-attribute del botón
+    expect(html).toContain('data-return-to="&lt;/script&gt;');
+  });
+
+  it('muestra la app que pide el acceso solo si client_id y redirect_uri están registrados', async () => {
+    const client = createClient({ name: 'app-contexto', redirectUris: ['https://ctx.example.com/cb'], isPublic: true }).client;
+    const authorize = (redirectUri: string): string =>
+      `${AUTHORIZE_PATH}?${new URLSearchParams({ client_id: client.id, redirect_uri: redirectUri, scope: 'openid email' })}`;
+    const login = async (returnTo: string): Promise<string> =>
+      (await createApp().request(`/login?return_to=${encodeURIComponent(returnTo)}`)).text();
+
+    const ok = await login(authorize('https://ctx.example.com/cb'));
+    expect(ok).toContain('app-contexto');
+    expect(ok).toContain('ctx.example.com');
+    // un destino no registrado no se describe: nunca se enseña un host arbitrario como "destino"
+    expect(await login(authorize('https://evil.example.com/cb'))).not.toContain('app-contexto');
   });
 });

@@ -68,6 +68,17 @@ function publicJwks(): JWK[] {
 
 export const getJwksJson = (): { keys: object[] } => ({ keys: publicJwks() });
 
+// metadatos de la clave activa para el panel de administración (sin material privado)
+export function getActiveKeyInfo(): { kid: string; alg: string; createdAt: Date } | null {
+  return (
+    getDb()
+      .select({ kid: signingKeys.kid, alg: signingKeys.alg, createdAt: signingKeys.createdAt })
+      .from(signingKeys)
+      .where(isNull(signingKeys.retiredAt))
+      .get() ?? null
+  );
+}
+
 export async function signJwt(
   claims: Record<string, unknown>,
   opts: { expiresInS: number; audience?: string | string[]; subject?: string },

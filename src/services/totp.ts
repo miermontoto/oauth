@@ -2,15 +2,14 @@
 // hmac-sha1, 6 dígitos, periodo de 30s, ventana ±1 y anti-replay por lastStep.
 // los códigos de recuperación (10, formato xxxx-xxxx) se guardan como sha-256 hex.
 import crypto from 'node:crypto';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, count, eq, isNull } from 'drizzle-orm';
 import { getDb } from '../db/index.js';
 import { recoveryCodes, userTotp, users } from '../db/schema.js';
-import { SERVICE_NAME } from '../constants.js';
+import { SERVICE_NAME, TOTP_PERIOD_S } from '../constants.js';
 
 // parámetros totp (rfc 6238) — compatibles con cualquier app autenticadora
 const TOTP_ALGO = 'sha1';
 const TOTP_DIGITS = 6;
-const TOTP_PERIOD_S = 30;
 const TOTP_WINDOW = 1; // pasos de tolerancia a cada lado (skew de reloj)
 const TOTP_SECRET_BYTES = 20; // 160 bits
 
@@ -172,6 +171,25 @@ export function hasTotpEnabled(userId: string): boolean {
     .where(and(eq(userTotp.userId, userId), eq(userTotp.enabled, true)))
     .get();
   return row !== undefined;
+}
+
+// estado del segundo factor para la página de cuenta; null si no está activo
+export function getTotpStatus(
+  userId: string,
+): { enabledAt: Date | null; recoveryLeft: number; recoveryTotal: number } | null {
+  const db = getDb();
+  const row = db
+    .select({ confirmedAt: userTotp.confirmedAt })
+    .from(userTotp)
+    .where(and(eq(userTotp.userId, userId), eq(userTotp.enabled, true)))
+    .get();
+  if (!row) return null;
+  const left = db
+    .select({ n: count() })
+    .from(recoveryCodes)
+    .where(and(eq(recoveryCodes.userId, userId), isNull(recoveryCodes.usedAt)))
+    .get();
+  return { enabledAt: row.confirmedAt, recoveryLeft: left?.n ?? 0, recoveryTotal: RECOVERY_CODE_COUNT };
 }
 
 // verifica un código totp y persiste el step consumido (anti-replay)

@@ -3,6 +3,8 @@ import { Hono } from 'hono';
 import type { AppEnv } from '../types.js';
 import { deleteUser, listUsers, setUserActive } from '../services/users.js';
 import { createClient, deleteClient, listClients } from '../services/clients.js';
+import { countActiveSessions } from '../services/session.js';
+import { getActiveKeyInfo } from '../services/keys.js';
 import { AdminPage, ClientCreatedPage, ErrorPage } from '../ui/pages.js';
 
 // url de vuelta a /admin con mensaje flash en query
@@ -27,9 +29,11 @@ export function adminRoutes(): Hono<AppEnv> {
   r.get('/', (c) =>
     c.html(
       AdminPage({
+        user: c.get('session')!.user,
         users: listUsers(),
         clients: listClients(),
-        currentUserId: c.get('session')!.user.id,
+        activeSessions: countActiveSessions(),
+        signingKey: getActiveKeyInfo(),
         flash: c.req.query('ok') ?? null,
         error: c.req.query('error') ?? null,
       }),

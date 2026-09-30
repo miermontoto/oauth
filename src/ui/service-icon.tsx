@@ -29,8 +29,9 @@ const SERVICE_FAVICONS = new Map([
 
 export const ServiceIcon: FC<{ host: string; name: string }> = ({ host, name }) => {
   const favicon = SERVICE_FAVICONS.get(host);
+  // sin favicon conocido se cae a la inicial dentro de un recuadro
   return (
-    <span class="hub-badge" aria-hidden="true">
+    <span class={favicon ? 'svc-ico' : 'svc-ico letter'} aria-hidden="true">
       {favicon ? <img src={favicon} width="28" height="28" alt="" /> : name.charAt(0)}
     </span>
   );

@@ -18,9 +18,12 @@ import {
   verifyAccessToken,
 } from '../services/tokens.js';
 import { clearSessionCookie, deleteSession } from '../services/session.js';
+import { ErrorPage } from '../ui/pages.js';
 import type { AppEnv } from '../types.js';
 
 const PKCE_METHOD = 'S256';
+// params irrecuperables (client_id/redirect_uri): página de error propia, nunca redirect
+const AUTHORIZE_ERROR_TITLE = 'Solicitud de autorización inválida';
 
 interface OAuthError {
   error: string;
@@ -36,17 +39,6 @@ function verifyPkceS256(verifier: string, challenge: string): boolean {
   const a = Buffer.from(crypto.createHash('sha256').update(verifier).digest('base64url'));
   const b = Buffer.from(challenge);
   return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
-
-// página de error inline para params irrecuperables (nunca se redirige al cliente)
-function errorPage(detail: string): string {
-  return `<!doctype html>
-<html lang="es">
-<head><meta charset="utf-8"><title>${SERVICE_NAME} · error</title>
-<style>body{font-family:system-ui,sans-serif;max-width:28rem;margin:4rem auto;padding:0 1rem}h1{font-size:1.1rem}p{color:#555}</style>
-</head>
-<body><h1>Solicitud de autorización inválida</h1><p>${detail}</p></body>
-</html>`;
 }
 
 // autenticación de cliente para /token y /revoke: basic o client_secret_post;
@@ -134,9 +126,21 @@ export function oidcRoutes(): Hono<AppEnv> {
     // client_id y redirect_uri se validan PRIMERO: si fallan no se puede
     // confiar en el destino, así que jamás se redirige (rfc 6749 §4.1.2.1)
     const client = q.client_id ? getClient(q.client_id) : null;
-    if (!client) return c.html(errorPage('El identificador de cliente no está registrado.'), 400);
+    if (!client) {
+      return c.html(
+        ErrorPage({ status: 400, title: AUTHORIZE_ERROR_TITLE, message: 'El identificador de cliente no está registrado.' }),
+        400,
+      );
+    }
     if (!q.redirect_uri || !validateRedirectUri(client, q.redirect_uri)) {
-      return c.html(errorPage('La dirección de retorno no coincide con las registradas para este cliente.'), 400);
+      return c.html(
+        ErrorPage({
+          status: 400,
+          title: AUTHORIZE_ERROR_TITLE,
+          message: 'La dirección de retorno no coincide con las registradas para este cliente.',
+        }),
+        400,
+      );
     }
 
     const redirectError = (error: string, description?: string) => {

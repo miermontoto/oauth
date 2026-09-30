@@ -1,5 +1,5 @@
 // sesiones de navegador del idp: servicio de @platform/auth + metadatos amr/auth_time
-import { eq } from 'drizzle-orm';
+import { count, eq, gt } from 'drizzle-orm';
 import { createSessionService, toSessionInfos, type SessionInfo } from '@platform/auth';
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import type { Context, MiddlewareHandler } from 'hono';
@@ -62,6 +62,17 @@ export const deleteOtherSessions = (userId: string, currentToken: string): numbe
 
 export function listSessionInfos(userId: string, currentToken: string): SessionInfo[] {
   return toSessionInfos(service.listSessions(userId), currentToken);
+}
+
+// sesiones de navegador vigentes de todos los usuarios (resumen del panel de administración)
+export function countActiveSessions(): number {
+  return (
+    getDb()
+      .select({ n: count() })
+      .from(authSessions)
+      .where(gt(authSessions.expiresAt, new Date()))
+      .get()?.n ?? 0
+  );
 }
 
 // middleware de identidad opcional: resuelve la cookie y deja session (o null) en contexto

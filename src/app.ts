@@ -2,6 +2,7 @@
 import { createPlatformApp } from '@platform/core-api';
 import { sessionMiddleware } from './services/session.js';
 import { FAVICON_SVG } from './ui/brand.js';
+import { FONT_FILES } from './ui/fonts.js';
 import { oidcRoutes, wellKnownRoutes } from './routes/oidc.js';
 import { loginRoutes } from './routes/login.js';
 import { socialRoutes } from './routes/social.js';
@@ -22,6 +23,13 @@ export function createApp(): Hono<AppEnv> {
       'Cache-Control': 'public, max-age=86400',
     }),
   );
+  // fuentes autoalojadas: la url cambia con el contenido, así que se cachean como inmutables
+  app.get('/fonts/:file', (c) => {
+    const font = FONT_FILES.get(c.req.path);
+    return font
+      ? c.body(font, 200, { 'Content-Type': 'font/woff2', 'Cache-Control': 'public, max-age=31536000, immutable' })
+      : c.notFound();
+  });
 
   app.use('*', sessionMiddleware);
 

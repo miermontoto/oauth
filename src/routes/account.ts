@@ -13,6 +13,7 @@ import {
 import {
   confirmTotpSetup,
   disableTotp,
+  getTotpStatus,
   hasTotpEnabled,
   startTotpSetup,
   verifyTotp,
@@ -49,7 +50,7 @@ export function accountRoutes(): Hono<AppEnv> {
         passkeys: listPasskeys(user.id),
         sessions: listSessionInfos(user.id, token),
         providers: listProviders(),
-        totpEnabled: hasTotpEnabled(user.id),
+        totp: getTotpStatus(user.id),
         flash: c.req.query('ok') ?? null,
         error: c.req.query('error') ?? null,
       }),

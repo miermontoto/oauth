@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { getDb } from '../db/index.js';
 import { clients } from '../db/schema.js';
 import { sha256hex } from './tokens.js';
+import { AUTHORIZE_PATH, SUPPORTED_SCOPES } from '../constants.js';
 
 const CLIENT_ID_BYTES = 8; // 16 hex, legible en configs
 const CLIENT_SECRET_BYTES = 32;
@@ -91,3 +92,26 @@ export function verifyClientSecret(clientId: string, secret: string): boolean {
 
 // match exacto contra las uris registradas (sin comodines ni puertos libres)
 export const validateRedirectUri = (client: Client, uri: string): boolean => client.redirectUris.includes(uri);
+
+// app que pide el acceso, leída del return_to del login cuando apunta a authorize.
+// solo se describe si client_id y redirect_uri validan: nunca se muestra un destino no registrado
+export interface AuthorizeRequest {
+  clientName: string;
+  host: string;
+  scopes: string[];
+  pkce: string | null;
+}
+
+export function describeAuthorizeRequest(returnTo: string | null): AuthorizeRequest | null {
+  if (!returnTo?.startsWith(`${AUTHORIZE_PATH}?`)) return null;
+  const q = new URLSearchParams(returnTo.slice(AUTHORIZE_PATH.length + 1));
+  const client = getClient(q.get('client_id') ?? '');
+  const redirectUri = q.get('redirect_uri') ?? '';
+  if (!client || !validateRedirectUri(client, redirectUri) || !URL.canParse(redirectUri)) return null;
+  return {
+    clientName: client.name,
+    host: new URL(redirectUri).host,
+    scopes: (q.get('scope') ?? '').split(/\s+/).filter((s) => (SUPPORTED_SCOPES as readonly string[]).includes(s)),
+    pkce: q.get('code_challenge_method'),
+  };
+}

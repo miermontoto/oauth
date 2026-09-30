@@ -15,6 +15,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource-variable/martian-mono": "^5.3.0",
     "@hono/node-server": "^1.14.0",
     "@node-rs/argon2": "^2.0.0",
     "@platform/auth": "workspace:*",

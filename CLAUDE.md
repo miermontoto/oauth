@@ -20,10 +20,16 @@ Hono 4 + drizzle-orm + better-sqlite3 (WAL) on Node 22, ESM, TypeScript strict. 
 - `src/db/` — `schema.ts` + generated `migrations/`; `getDb()` singleton with sync drizzle API (`.get()/.all()/.run()`)
 - `src/services/` — `session.ts` (browser sessions + amr meta), `keys.ts` (ES256 signing key), `tokens.ts` (oauth tokens + cleanup)
 - `src/routes/` — `oidc.ts` (+ `/.well-known`), `login.ts`, `social.ts`, `passkey.ts`, `account.ts`, `admin.ts`
+- `src/ui/` — `layout.tsx` (stylesheet + two shells: auth card, or app shell with nav when `user` is passed), `pages.tsx` (presentation only, no db), `fonts.ts` (Martian Mono from `@fontsource-variable/martian-mono`, served at hashed `/fonts/*.woff2`, immutable cache)
+
+## UI design ("Terminal")
+
+Brutalist mono, same lineage as url.mier.info. Everything in Martian Mono: `font-stretch:112.5%` for headings, `87.5%` for body/data. Square corners, black/white, color only for state (`--ok`/`--bad`). Dark by default, light "thermal paper" via `prefers-color-scheme` (no toggle). All colors are tokens on `:root` in `layout.tsx`; never literal colors in rules. UI voice lowercase via CSS `text-transform`, source strings keep normal Spanish casing. Never interpolate request data into inline `<script>`s: pass it through `data-*` attributes (JSX escapes them).
 
 ## Key flows
 
-- **Service hub**: `GET /` (in `login.ts`) renders `HubPage` when logged in — a card grid of the registered OAuth clients, each linking to the origin of its first redirect_uri (auto, no extra config). Logged-out → `/login`.
+- **Service hub**: `GET /` (in `login.ts`) renders `HubPage` when logged in — a `whoami` panel (sub, amr, auth_time, sessions, totp) plus a numbered list of the registered OAuth clients (keys 1–9 open them), each linking to the origin of its first redirect_uri (auto, no extra config). Logged-out → `/login`.
+- **Login context**: when `return_to` is an `/oidc/authorize` URL, `describeAuthorizeRequest()` (`services/clients.ts`) resolves client name, host and scopes for the login page; only if client_id + redirect_uri validate.
 - **Authorization code + PKCE (S256)**: codes are single-use, 60s TTL. All long-lived tokens and one-shot codes are stored sha-256 hashed.
 - **Access token = JWT ES256** verifiable via JWKS — the Go app verifies stateless. Key generated at first boot, persisted in `signing_keys` (rotation via `retired_at`: retired keys only verify).
 - **Refresh tokens**: rotation with chain revocation — `replaced_by_hash` links the chain; replay of a rotated token revokes the whole chain.

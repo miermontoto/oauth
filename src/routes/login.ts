@@ -11,6 +11,7 @@ import {
   clearSessionCookie,
   createSession,
   deleteSession,
+  listSessionInfos,
   setSessionCookie,
 } from '../services/session.js';
 import { createUser, findUserByEmail, setPassword, verifyCredentials } from '../services/users.js';
@@ -20,7 +21,7 @@ import { listProviders } from '../services/upstream.js';
 import { hasTotpEnabled, verifyRecoveryCode, verifyTotp } from '../services/totp.js';
 import { revokeUserTokens } from '../services/tokens.js';
 import { clientIp } from '../services/client-ip.js';
-import { listClients } from '../services/clients.js';
+import { describeAuthorizeRequest, listClients } from '../services/clients.js';
 import { ForgotPage, HubPage, LoginPage, MessagePage, MfaPage, ResetPage, SignupPage } from '../ui/pages.js';
 import type { AppEnv } from '../types.js';
 
@@ -70,13 +71,20 @@ export function loginRoutes(): Hono<AppEnv> {
       })
       .filter((s): s is { name: string; url: string; host: string } => s !== null)
       .sort((a, b) => a.name.localeCompare(b.name));
-    return c.html(HubPage({ user: session.user, services }));
+    return c.html(
+      HubPage({
+        session,
+        sessionCount: listSessionInfos(session.user.id, session.token).length,
+        totpEnabled: hasTotpEnabled(session.user.id),
+        services,
+      }),
+    );
   });
 
   r.get('/login', (c) => {
     const returnTo = c.req.query('return_to') ?? null;
     if (c.get('session') && c.req.query('force') !== '1') return c.redirect(safeReturnTo(returnTo));
-    return c.html(LoginPage({ providers: listProviders(), returnTo }));
+    return c.html(LoginPage({ providers: listProviders(), returnTo, request: describeAuthorizeRequest(returnTo) }));
   });
 
   r.post('/login', async (c) => {
@@ -89,13 +97,25 @@ export function loginRoutes(): Hono<AppEnv> {
     const returnTo = return_to ?? null;
 
     if (!checkRateLimit(`login:${clientIp(c)}:${email}`, LOGIN_LIMIT.max, LOGIN_LIMIT.windowMs)) {
-      return c.html(LoginPage({ providers: listProviders(), returnTo, error: ERR_TOO_MANY, email }), 429);
+      return c.html(
+        LoginPage({ providers: listProviders(), returnTo, request: describeAuthorizeRequest(returnTo), error: ERR_TOO_MANY, email }),
+        429,
+      );
     }
 
     const user = await verifyCredentials(email, password);
     // mismo mensaje exista o no el email: no filtrar cuentas válidas
     if (!user) {
-      return c.html(LoginPage({ providers: listProviders(), returnTo, error: ERR_BAD_CREDENTIALS, email }), 401);
+      return c.html(
+        LoginPage({
+          providers: listProviders(),
+          returnTo,
+          request: describeAuthorizeRequest(returnTo),
+          error: ERR_BAD_CREDENTIALS,
+          email,
+        }),
+        401,
+      );
     }
 
     if (hasTotpEnabled(user.id)) {

@@ -22,3 +22,8 @@ export const APPLE_CLIENT_SECRET_TTL_S = 5 * 60;
 export const WEBAUTHN_CHALLENGE_TTL_MS = 5 * 60 * 1000;
 export const MFA_CHALLENGE_TTL_MS = 5 * 60 * 1000;
 export const MFA_CHALLENGE_MAX_ATTEMPTS = 5;
+// periodo totp (rfc 6238): lo usan el verificador y la cuenta atrás del paso mfa
+export const TOTP_PERIOD_S = 30;
+
+// ruta de authorize tal y como llega en el return_to del login
+export const AUTHORIZE_PATH = '/oidc/authorize';
