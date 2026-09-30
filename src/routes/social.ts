@@ -10,7 +10,7 @@ import { createSession, setSessionCookie } from '../services/session.js';
 import { getDb } from '../db/index.js';
 import { mfaChallenges } from '../db/schema.js';
 import { hasTotpEnabled } from '../services/totp.js';
-import { MFA_CHALLENGE_TTL_MS } from '../constants.js';
+import { LOGIN_STATE_TTL_MS, MFA_CHALLENGE_TTL_MS } from '../constants.js';
 import { getConfig } from '../config.js';
 import type { AppEnv } from '../types.js';
 
@@ -49,7 +49,9 @@ export function socialRoutes(): Hono<AppEnv> {
       sameSite: started.formPost ? 'None' : 'Lax',
       secure: started.formPost || getConfig().isProd,
       path: '/callback',
-      maxAge: Math.floor(MFA_CHALLENGE_TTL_MS / 1000),
+      // misma vida que la fila de login_states: si caducara antes, un login lento
+      // (p. ej. el 2fa de apple) volvería con el state válido pero sin cookie
+      maxAge: Math.floor(LOGIN_STATE_TTL_MS / 1000),
     });
     return c.redirect(started.url, 302);
   });

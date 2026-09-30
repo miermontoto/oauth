@@ -8,7 +8,7 @@ import type { Hono } from 'hono';
 import { createApp } from '../src/app.js';
 import { ensureSigningKey } from '../src/services/keys.js';
 import { closeDb } from '../src/db/index.js';
-import { APPLE_CLIENT_SECRET_TTL_S } from '../src/constants.js';
+import { APPLE_CLIENT_SECRET_TTL_S, LOGIN_STATE_TTL_MS } from '../src/constants.js';
 import type { AppEnv } from '../src/types.js';
 
 const APPLE_AUDIENCE = 'https://appleid.apple.com';
@@ -70,6 +70,8 @@ describe('sign in with apple', () => {
     // una cookie Lax no viajaría en el POST cross-site desde appleid.apple.com
     expect(setCookie).toMatch(/SameSite=None/i);
     expect(setCookie).toMatch(/Secure/i);
+    // la cookie debe vivir lo mismo que el state persistido en login_states
+    expect(setCookie).toContain(`Max-Age=${LOGIN_STATE_TTL_MS / 1000}`);
   });
 
   it('rechaza el callback POST sin la cookie que ata el state al navegador', async () => {
