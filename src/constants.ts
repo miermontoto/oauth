@@ -17,6 +17,8 @@ export const SUPPORTED_SCOPES = ['openid', 'profile', 'email', 'offline_access']
 export const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
 export const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 export const LOGIN_STATE_TTL_MS = 10 * 60 * 1000;
+// jwt client_secret de apple: se firma por exchange, basta con que viva unos minutos
+export const APPLE_CLIENT_SECRET_TTL_S = 5 * 60;
 export const WEBAUTHN_CHALLENGE_TTL_MS = 5 * 60 * 1000;
 export const MFA_CHALLENGE_TTL_MS = 5 * 60 * 1000;
 export const MFA_CHALLENGE_MAX_ATTEMPTS = 5;

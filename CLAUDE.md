@@ -30,7 +30,8 @@ Hono 4 + drizzle-orm + better-sqlite3 (WAL) on Node 22, ESM, TypeScript strict. 
 - **Browser sessions (SSO)**: `auth_session` table from `@platform/auth`, opaque token in `id_session` cookie, 30d sliding. `session_meta` adds `amr` + `auth_time`; `sessionMiddleware` puts `CurrentSession | null` in `c.get('session')`.
 - **MFA**: opt-in TOTP + recovery codes; `mfa_challenges` holds the interim state between first factor and TOTP.
 - **Passkeys**: webauthn (`passkeys`, `webauthn_challenges`).
-- **Social login**: google/github upstream, credential-gated (a button appears only if its env pair is set); round-trip state persisted in `login_states`.
+- **Social login**: google/github/apple upstream, credential-gated (a button appears only if all its env vars are set); round-trip state persisted in `login_states`. Providers are a `PROVIDERS` Map of specs in `services/upstream.ts` (add one there + an icon path in `ui/pages.tsx`); google/apple share `idTokenClaims` (exchange + JWKS verify, state doubles as nonce).
+- **Apple specifics**: no PKCE; `client_secret` is an ES256 JWT signed per exchange with the `.p8` key (`APPLE_PRIVATE_KEY`, `\n`-escaped in `.env`). Scopes `name email` force `response_mode=form_post` → callback is a cross-site POST, so `/callback/:provider` accepts GET+POST and the `oauth_state` cookie is `SameSite=None; Secure` for form_post providers (Lax would not be sent). The name only arrives on first authorization (unsigned `user` form field). Apple rejects localhost return URLs: test on a real https domain.
 
 ## Key commands
 

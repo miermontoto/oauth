@@ -40,32 +40,42 @@ export function socialRoutes(): Hono<AppEnv> {
     const started = beginUpstreamLogin(provider, { returnTo, linkUserId });
     if (!started) return c.redirect('/login?error=provider', 302);
     // ata el state al navegador: la cookie debe coincidir con el state que vuelve
-    // en el callback, así un callback preparado por un atacante no cuela
+    // en el callback, así un callback preparado por un atacante no cuela.
+    // form_post (apple) vuelve por POST cross-site, donde una cookie Lax no viaja:
+    // ahí va SameSite=None (exige Secure). la protección real es la comparación de
+    // valores, que un atacante no puede satisfacer sin conocer la cookie de la víctima
     setCookie(c, STATE_COOKIE, started.state, {
       httpOnly: true,
-      sameSite: 'Lax',
-      secure: getConfig().isProd,
+      sameSite: started.formPost ? 'None' : 'Lax',
+      secure: started.formPost || getConfig().isProd,
       path: '/callback',
       maxAge: Math.floor(MFA_CHALLENGE_TTL_MS / 1000),
     });
     return c.redirect(started.url, 302);
   });
 
-  // callback del proveedor: valida y consume el state, y despacha login o link
-  r.get('/callback/:provider', async (c) => {
+  // callback del proveedor: valida y consume el state, y despacha login o link.
+  // la respuesta llega por query (GET) o por form_post (POST, apple)
+  r.on(['GET', 'POST'], '/callback/:provider', async (c) => {
     const provider = c.req.param('provider');
-    // binding de navegador: el state de la url debe igualar el de la cookie
+    const fields = c.req.method === 'POST' ? await c.req.parseBody() : c.req.query();
+    const field = (name: string): string | undefined => {
+      const value = fields[name];
+      return typeof value === 'string' ? value : undefined;
+    };
+    // binding de navegador: el state devuelto debe igualar el de la cookie
     const cookieState = getCookie(c, STATE_COOKIE);
     deleteCookie(c, STATE_COOKIE, { path: '/callback' });
-    const urlState = c.req.query('state');
+    const urlState = field('state');
     if (!cookieState || cookieState !== urlState) {
       return c.redirect(`/login?error=${encodeURIComponent('sesión de acceso no válida, inténtalo de nuevo')}`, 302);
     }
 
     const result = await completeUpstreamLogin(provider, {
-      code: c.req.query('code'),
+      code: field('code'),
       state: urlState,
-      error: c.req.query('error'),
+      error: field('error'),
+      user: field('user'),
     });
 
     if ('error' in result) {

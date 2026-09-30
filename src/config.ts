@@ -17,6 +17,15 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
+  // apple: services id (client_id), team id, key id y pem de la clave .p8 que firma el
+  // client_secret. el pem admite \n escapados para caber en una línea del .env
+  APPLE_CLIENT_ID: z.string().optional(),
+  APPLE_TEAM_ID: z.string().optional(),
+  APPLE_KEY_ID: z.string().optional(),
+  APPLE_PRIVATE_KEY: z
+    .string()
+    .optional()
+    .transform((v) => v?.replace(/\\n/g, '\n')),
 });
 
 export type Config = z.infer<typeof envSchema> & { isProd: boolean; adminEmails: string[] };

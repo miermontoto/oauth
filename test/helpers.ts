@@ -8,6 +8,21 @@ process.env.DATABASE_PATH = `${SCRATCH}/oidc-test-${process.pid}-${Date.now()}.d
 process.env.ISSUER_URL = 'http://localhost:3000';
 process.env.NODE_ENV = 'test';
 
+// credenciales apple de prueba: clave ec p-256 efímera; el pem viaja con \n escapados,
+// como en el .env, para cubrir también el unescape de config
+const appleKeys = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
+export const APPLE_CLIENT_ID = 'info.mier.id.test';
+export const APPLE_TEAM_ID = 'TEAM123456';
+export const APPLE_KEY_ID = 'KEY1234567';
+export const APPLE_PUBLIC_KEY = appleKeys.publicKey;
+process.env.APPLE_CLIENT_ID = APPLE_CLIENT_ID;
+process.env.APPLE_TEAM_ID = APPLE_TEAM_ID;
+process.env.APPLE_KEY_ID = APPLE_KEY_ID;
+process.env.APPLE_PRIVATE_KEY = appleKeys.privateKey
+  .export({ type: 'pkcs8', format: 'pem' })
+  .toString()
+  .replace(/\n/g, '\\n');
+
 export const DB_PATH = process.env.DATABASE_PATH;
 export const ISSUER = process.env.ISSUER_URL;
 
