@@ -4,6 +4,7 @@ import type { HtmlEscapedString } from 'hono/utils/html';
 import type { SessionInfo } from '@platform/auth';
 import type { PublicUser } from '../types.js';
 import { Layout } from './layout.js';
+import { ServiceIcon } from './service-icon.js';
 
 // fc con retorno garantizado (sin la rama null) para que c.html(Page({...})) tipe bien en los routers
 type PageFC<P> = ((props: P) => HtmlEscapedString | Promise<HtmlEscapedString>) & FC<P>;
@@ -126,7 +127,7 @@ export const HubPage: PageFC<{
       <div class="hub">
         {services.map((s) => (
           <a class="hub-card" href={s.url}>
-            <span class="hub-badge">{s.name.charAt(0)}</span>
+            <ServiceIcon host={s.host} name={s.name} />
             <span class="hub-body">
               <span class="hub-name">{s.name}</span>
               <span class="hub-host">{s.host}</span>

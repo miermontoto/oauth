@@ -66,6 +66,7 @@ section.panel{background:var(--card);border:1px solid var(--edge);border-radius:
 .hub-card{display:flex;align-items:center;gap:.85rem;padding:.9rem 1rem;border:1px solid var(--edge);text-decoration:none;color:var(--fg)}
 .hub-card:hover{background:var(--field);border-color:var(--fg);color:var(--fg)}
 .hub-badge{flex:0 0 auto;width:2.4rem;height:2.4rem;display:flex;align-items:center;justify-content:center;border:1px solid var(--edge);font-size:1.15rem;text-transform:uppercase}
+.hub-badge img{display:block;object-fit:contain}
 .hub-card:hover .hub-badge{border-color:var(--fg)}
 .hub-body{display:flex;flex-direction:column;gap:.1rem;min-width:0}
 .hub-name{font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
