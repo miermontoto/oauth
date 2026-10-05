@@ -1,5 +1,6 @@
 // boot: env → db (migraciones al abrir) → clave de firma → http + limpiezas periódicas
 import { loadAppEnv, startApiServer } from '@platform/core-api';
+import { initTelemetry } from '@platform/observability';
 
 loadAppEnv(import.meta.url, { levelsUp: 1 });
 
@@ -10,6 +11,9 @@ const { cleanupExpiredSessions } = await import('./services/session.js');
 const { cleanupExpiredTokens } = await import('./services/tokens.js');
 const { createApp } = await import('./app.js');
 const { SESSION_CLEANUP_INTERVAL_MS, SERVICE_NAME, VERSION } = await import('./constants.js');
+
+// trazas + logs (export otlp solo si hay OTEL_EXPORTER_OTLP_ENDPOINT)
+initTelemetry({ service: SERVICE_NAME, version: VERSION });
 
 const config = getConfig();
 getDb(); // abre la db y aplica migraciones

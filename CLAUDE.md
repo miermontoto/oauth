@@ -52,7 +52,11 @@ docker compose up --build -d   # containerized deployment
 
 ## Environment variables
 
-See `.env.example`. `ISSUER_URL` is mandatory in prod (the `iss` of every token). `DATABASE_PATH` defaults to `./data/oauth.db` (`/app/data/oauth.db` in docker). SMTP optional: without it, verification/reset links are logged to console. Social provider credentials optional.
+See `.env.example`. `ISSUER_URL` is mandatory in prod (the `iss` of every token). `DATABASE_PATH` defaults to `./data/oauth.db` (`/app/data/oauth.db` in docker). SMTP optional: without it, verification/reset links are logged to console. Social provider credentials optional. `OTEL_EXPORTER_OTLP_ENDPOINT` + `OTEL_EXPORTER_OTLP_HEADERS` export traces/logs to OpenObserve (empty = no export).
+
+## Debugging: traces and logs
+
+`@platform/observability` traces every request (service `mier.info`), every sqlite query inside it and outbound fetches. Relying parties (duckhunt, carreterinas) propagate `traceparent`, so an OIDC login is one trace across both services. Logs carry `trace=<id>`; responses carry `x-trace-id`. Before reading code, query: `platform/tooling/observability/obs.sh errors --service mier.info` · `obs.sh slow --service mier.info` · `obs.sh trace <trace_id>`.
 
 ## v1 decisions
 
