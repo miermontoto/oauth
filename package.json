@@ -36,7 +36,7 @@
     "hono": "^4.13.11",
     "jose": "^5.9.6",
     "nodemailer": "^10.0.12",
-    "zod": "^3.23.0"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@platform/config": "workspace:*",
